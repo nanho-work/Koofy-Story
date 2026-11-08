@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { FeaturedCarousel } from "../../components/FeaturedCarousel";
 import { StoryCover } from "../../components/StoryCover";
-import { DiscoveryEmpty } from "../../components/WorkGrid";
+import { DiscoveryEmpty, WorkGrid } from "../../components/WorkGrid";
 import { discover, genreOf } from "../../lib/discovery";
 import { copy } from "../../lib/languages";
 import { siteCopy } from "../../lib/navigation";
@@ -11,19 +11,22 @@ export default async function HomePage({ params }: { params: Promise<{ language:
   const language = requireLanguage((await params).language);
   const t = siteCopy[language];
   const reading = copy[language];
-  const { featured, latest } = await discover(language);
+  const { featured, latest, shelf } = await discover(language);
   const dates = new Intl.DateTimeFormat(language, { month: "short", day: "numeric", timeZone: "Asia/Seoul" });
   return (
     <main className="home">
       <h1 className="visually-hidden">{reading.brand}</h1>
-      <FeaturedCarousel language={language} slides={featured.map(({ work, first }) => {
+      <FeaturedCarousel language={language} slides={featured.map(({ work, first, monthlyEpisode }) => {
         const genre = genreOf(work);
+        const episode = monthlyEpisode ?? first;
         return {
-          id: work.id, title: work.title, label: genre ? t[genre] : reading[work.kind],
-          image: work.cover ? coverUrl(language, work.id) : undefined,
+          id: work.id,
+          title: monthlyEpisode?.title ?? work.title,
+          label: monthlyEpisode ? work.title : genre ? t[genre] : reading[work.kind],
+          image: monthlyEpisode?.cover ? coverUrl(language, work.id, monthlyEpisode.id) : work.cover ? coverUrl(language, work.id) : undefined,
           href: workHref(language, work.id),
-          readHref: first ? episodeHref(language, work.id, first.id) : undefined,
-          readLabel: work.kind === "series" ? t.start : reading.read,
+          readHref: episode ? episodeHref(language, work.id, episode.id) : undefined,
+          readLabel: monthlyEpisode ? t.readStory : work.kind === "series" ? t.start : reading.read,
         };
       })} />
       <section className="new-releases" aria-labelledby="new-releases-heading">
@@ -48,6 +51,10 @@ export default async function HomePage({ params }: { params: Promise<{ language:
           })}
         </ul> : <DiscoveryEmpty language={language} />}
       </section>
+      {!!shelf.length && <section className="home-shelf" aria-labelledby="home-shelf-heading">
+        <h2 id="home-shelf-heading">{t.explore}</h2>
+        <WorkGrid works={shelf} language={language} variant="shelf" />
+      </section>}
     </main>
   );
 }

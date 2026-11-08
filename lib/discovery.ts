@@ -17,10 +17,16 @@ function time(item: { releasedAt: string }) {
   return Date.parse(item.releasedAt) || 0;
 }
 
+function newestEpisode(episodes: Episode[]) {
+  return episodes.reduce<Episode | undefined>((newest, item) =>
+    !newest || time(item) > time(newest) || (time(item) === time(newest) && (item.number ?? 0) > (newest.number ?? 0))
+      ? item : newest, undefined);
+}
+
 export async function discover(language: Language) {
   const works = (await listWorks(language)).slice().sort((a, b) => time(b) - time(a));
   const illustrated = works.filter((work) => work.cover);
-  const monthly = illustrated.find((work) => genreOf(work) === "monthly");
+  const monthly = works.find((work) => genreOf(work) === "monthly");
   const featured = [...new Set([...(monthly ? [monthly] : []), ...illustrated, ...works])].slice(0, 3);
   const recent = works.slice(0, 4);
   const candidates = [...new Set([...featured, ...recent])];
@@ -31,13 +37,19 @@ export async function discover(language: Language) {
     return result?.status === "fulfilled" ? result.value?.episodes ?? [] : [];
   };
   const latest = recent.flatMap((work) => {
-    const episode = episodesOf(work).reduce<Episode | undefined>((newest, item) =>
-      !newest || time(item) > time(newest) || (time(item) === time(newest) && (item.number ?? 0) > (newest.number ?? 0))
-        ? item : newest, undefined);
+    const episode = newestEpisode(episodesOf(work));
     return episode ? [{ work, episode }] : [];
   }).sort((a, b) => time(b.episode) - time(a.episode));
   if (works.length && !latest.length && details.some((result) => result.status === "rejected")) {
     throw new Error("Could not load recent episodes");
   }
-  return { featured: featured.map((work) => ({ work, first: episodesOf(work)[0] })), latest };
+  return {
+    featured: featured.map((work) => ({
+      work,
+      monthlyEpisode: work === monthly ? newestEpisode(episodesOf(work)) : undefined,
+      first: episodesOf(work)[0],
+    })),
+    latest,
+    shelf: [...new Set([...illustrated, ...works])].slice(0, 4),
+  };
 }

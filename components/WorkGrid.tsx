@@ -10,15 +10,15 @@ export function DiscoveryEmpty({ language }: { language: Language }) {
   return <div className="discovery-empty"><p>{t.empty}</p><p>{t.moreSoon}</p></div>;
 }
 
-export function WorkGrid({ works, language }: { works: Work[]; language: Language }) {
+export function WorkGrid({ works, language, variant }: { works: Work[]; language: Language; variant?: "shelf" }) {
   if (!works.length) return <DiscoveryEmpty language={language} />;
   return (
-    <ul className="work-grid">
+    <ul className="work-grid" data-variant={variant}>
       {works.map((work) => <li key={work.id}>
         <Link className="work-card" href={workHref(language, work.id)}>
           <StoryCover url={work.cover ? coverUrl(language, work.id) : undefined} />
           <h3>{work.title}</h3>
-          <WorkLabel work={work} language={language} />
+          {variant !== "shelf" && <WorkLabel work={work} language={language} />}
         </Link>
       </li>)}
     </ul>

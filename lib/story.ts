@@ -23,7 +23,8 @@ export type Work = StoryItem & {
 };
 
 export type Episode = StoryItem & { number: number | null };
-type WorkResult = { work: Work; episodes: Episode[] };
+export type UpcomingEpisode = Pick<Episode, "id" | "title" | "number"> & { scheduledAt: string };
+type WorkResult = { work: Work; episodes: Episode[]; upcomingEpisodes?: UpcomingEpisode[] };
 type ReadingResult = {
   work: Work;
   episode: Episode;
