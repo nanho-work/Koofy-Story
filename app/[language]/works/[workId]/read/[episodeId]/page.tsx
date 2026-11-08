@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { ProtectedProse } from "../../../../../../components/ProtectedProse";
 import { siteCopy } from "../../../../../../lib/navigation";
 import { copy } from "../../../../../../lib/languages";
 import { coverUrl, episodeHref, getEpisode, requireLanguage, workHref } from "../../../../../../lib/story";
@@ -30,11 +31,11 @@ export default async function EpisodePage({ params }: Props) {
           {episode.author && <p className="muted">{episode.author}</p>}
         </header>
         {episode.cover && <img className="reader-cover" alt="" src={coverUrl(language, work.id, episode.id)} decoding="async" />}
-        <div className="prose">
+        <ProtectedProse>
           {blocks.map((block, index) => block.type === "heading"
             ? <h2 key={index}>{block.text}</h2>
             : <p key={index}>{block.text}</p>)}
-        </div>
+        </ProtectedProse>
       </article>
       {work.kind === "series" && <nav className="reader-nav" aria-label={t.episodes}>
         {previous && <Link rel="prev" href={episodeHref(language, work.id, previous.id)}>← {t.previous}</Link>}
