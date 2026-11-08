@@ -1,11 +1,12 @@
 "use client";
 
 import Link from "next/link";
+import type { ReactNode } from "react";
 import { usePathname } from "next/navigation";
 import { copy, languages, languageNames, type Language } from "../lib/languages";
 import { genres, isGenre, languageCookie, sectionHref, siteCopy } from "../lib/navigation";
 
-export function StoryHeader({ language }: { language: Language }) {
+export function StoryHeader({ language, sidebarControl }: { language: Language; sidebarControl: ReactNode }) {
   const pathname = usePathname();
   const [, , area, item] = pathname.split("/");
   const genre = area === "browse" && item && isGenre(item) ? item : undefined;
@@ -13,14 +14,17 @@ export function StoryHeader({ language }: { language: Language }) {
   return (
     <header className="masthead">
       <div className="masthead-inner">
-        <Link className="wordmark" href={sectionHref(language)} aria-label={`${copy[language].brand} · ${t.home}`}>
-          <svg viewBox="0 0 40 40" width="36" height="36" aria-hidden="true">
-            <rect width="40" height="40" rx="10" fill="currentColor" />
-            <path d="M20 27.8c-3.8-3.1-7.8-3.8-12-3.2v-13c4.8-.7 8.8.3 12 3.6 3.2-3.3 7.2-4.3 12-3.6v13c-4.2-.6-8.2.1-12 3.2Zm0-12.6v12.2" fill="none" stroke="#faf7ed" strokeWidth="1.55" strokeLinejoin="round" />
-            <path d="M8 28.1c4.6-.3 8.6.8 12 3 3.4-2.2 7.4-3.3 12-3" fill="none" stroke="#faf7ed" strokeWidth="1.3" strokeLinecap="round" />
-          </svg>
-          <span>{copy[language].brand}</span>
-        </Link>
+        <div className="masthead-brand">
+          {sidebarControl}
+          <Link className="wordmark" href={sectionHref(language)} aria-label={`${copy[language].brand} · ${t.home}`}>
+            <svg viewBox="0 0 40 40" width="36" height="36" aria-hidden="true">
+              <rect width="40" height="40" rx="10" fill="currentColor" />
+              <path d="M20 27.8c-3.8-3.1-7.8-3.8-12-3.2v-13c4.8-.7 8.8.3 12 3.6 3.2-3.3 7.2-4.3 12-3.6v13c-4.2-.6-8.2.1-12 3.2Zm0-12.6v12.2" fill="none" stroke="#faf7ed" strokeWidth="1.55" strokeLinejoin="round" />
+              <path d="M8 28.1c4.6-.3 8.6.8 12 3 3.4-2.2 7.4-3.3 12-3" fill="none" stroke="#faf7ed" strokeWidth="1.3" strokeLinecap="round" />
+            </svg>
+            <span>{copy[language].brand}</span>
+          </Link>
+        </div>
         <nav className="main-nav" aria-label={t.nav}>
           {([undefined, ...genres] as const).map((entry) => {
             const href = sectionHref(language, entry);

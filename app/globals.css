@@ -8,6 +8,8 @@
   --line: #dfded2;
   --gutter: clamp(1rem, 4vw, 3rem);
   --page-width: 72rem;
+  --layout-width: 83rem;
+  --content-top: clamp(1.25rem, 4vw, 2.6rem);
   --display: Georgia, "Noto Serif CJK KR", "AppleMyungjo", "Yu Mincho", serif;
   background: var(--paper);
   color: var(--ink);
@@ -19,8 +21,9 @@ body { margin: 0; }
 a { color: inherit; }
 a:focus-visible, button:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
 .story-shell { display: flex; flex-direction: column; min-height: 100svh; }
-.page, .masthead-inner, .site-footer > div { width: min(100%, var(--page-width)); margin-inline: auto; padding-inline: var(--gutter); }
-.page { flex: 1; padding-bottom: clamp(3rem, 7vw, 6rem); }
+.story-layout, .masthead-inner, .site-footer > div { width: min(100%, var(--page-width)); margin-inline: auto; padding-inline: var(--gutter); }
+.story-layout { flex: 1; }
+.page { min-width: 0; padding-bottom: clamp(3rem, 7vw, 6rem); }
 .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 
 .masthead { border-bottom: 1px solid var(--line); background: var(--surface); }
@@ -30,6 +33,7 @@ a:focus-visible, button:focus-visible, select:focus-visible { outline: 2px solid
   align-items: center;
   gap: 0 clamp(1rem, 3vw, 2.5rem);
 }
+.masthead-brand { display: flex; align-items: center; gap: .3rem; justify-self: start; }
 .wordmark { display: inline-flex; align-items: center; gap: .6rem; justify-self: start; color: var(--accent); font-size: clamp(1rem, 2.5vw, 1.28rem); font-weight: 760; letter-spacing: -.045em; text-decoration: none; white-space: nowrap; }
 .wordmark svg { flex: none; }
 .main-nav { display: flex; gap: clamp(1rem, 3vw, 2.1rem); }
@@ -43,7 +47,47 @@ a:focus-visible, button:focus-visible, select:focus-visible { outline: 2px solid
 .site-footer { border-top: 1px solid var(--line); color: var(--muted); font-size: .8rem; }
 .site-footer > div { padding-block: 1.35rem; }
 
-.home, .browse { padding-top: clamp(1.25rem, 4vw, 2.6rem); }
+.story-sidebar { display: none; }
+.sidebar-downloads { min-width: 0; }
+.sidebar-kicker { margin: 0 0 .5rem; color: var(--accent); font-size: .75rem; font-weight: 700; }
+.sidebar-downloads h2 { margin: 0; font-size: 1.13rem; line-height: 1.25; overflow-wrap: anywhere; }
+.sidebar-description { margin: .55rem 0 1rem; color: var(--muted); font-size: .83rem; line-height: 1.65; overflow-wrap: anywhere; }
+.sidebar-stores { display: grid; justify-items: center; gap: .25rem; width: 155px; max-width: 100%; margin: 0; padding: 0; list-style: none; }
+.sidebar-stores li { max-width: 100%; }
+.sidebar-stores a { display: inline-block; border-radius: 6px; vertical-align: top; }
+.store-badge { display: block; width: auto; max-width: 100%; height: 40px; object-fit: contain; }
+/* The official Play artwork has different transparent margins by language. */
+.store-badge--google-play { height: 52px; }
+.store-badge--google-play:lang(en) { height: 60px; }
+.mobile-sidebar { flex: none; }
+.sidebar-trigger, .sidebar-close { display: inline-flex; align-items: center; justify-content: center; gap: .18rem; min-width: 2.75rem; min-height: 2.75rem; padding: .25rem; border: 0; border-radius: 6px; background: transparent; color: var(--accent); cursor: pointer; }
+.sidebar-trigger { font: inherit; font-size: .73rem; font-weight: 650; }
+.sidebar-trigger:hover, .sidebar-close:hover { background: #edf0e6; }
+.sidebar-dialog { position: fixed; inset: 0 auto 0 0; width: min(18rem, 88vw); max-width: none; height: 100%; max-height: none; margin: 0; padding: 0; border: 0; background: var(--paper); color: var(--ink); }
+.sidebar-dialog::backdrop { background: #18251d65; }
+.sidebar-dialog-inner { position: relative; min-height: 100%; padding: 4rem 1.25rem 1.5rem; }
+.sidebar-close { position: absolute; top: .45rem; right: .5rem; }
+
+@media (min-width: 48rem) {
+  .story-layout, .masthead-inner, .site-footer > div { width: min(100%, var(--layout-width)); }
+  .story-layout {
+    display: grid;
+    grid-template-columns: 11rem minmax(0, 1fr);
+    gap: clamp(1rem, 3vw, 2.5rem);
+  }
+  .story-sidebar {
+    position: sticky;
+    top: 1.25rem;
+    display: block;
+    align-self: start;
+    margin-top: var(--content-top);
+    padding: .3rem 1rem .8rem 0;
+    border-right: 1px solid var(--line);
+  }
+  .mobile-sidebar { display: none; }
+}
+
+.home, .browse { padding-top: var(--content-top); }
 .featured {
   --slide-gap: clamp(.55rem, 1.25vw, .9rem);
   --slide-width: 62%;
@@ -176,7 +220,7 @@ a:focus-visible, button:focus-visible, select:focus-visible { outline: 2px solid
   .main-nav { justify-self: center; }
   .work-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 }
-@media (max-width: 46rem) {
+@media (width < 48rem) {
   .masthead-inner { grid-template-columns: minmax(0, 1fr) auto; gap: 0 .5rem; }
   .wordmark, .language-control { min-height: 3.5rem; }
   .wordmark svg { width: 29px; height: 29px; }

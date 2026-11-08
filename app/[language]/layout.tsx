@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { StoryHeader } from "../../components/StoryHeader";
+import { StoryMobileSidebar, StorySidebar } from "../../components/StorySidebar";
 import { copy } from "../../lib/languages";
 import { requireLanguage } from "../../lib/story";
 
@@ -16,8 +17,11 @@ export default async function StoryLayout({ children, params }: {
   const language = requireLanguage((await params).language);
   return (
     <div className="story-shell" lang={language}>
-      <StoryHeader language={language} />
-      <div className="page">{children}</div>
+      <StoryHeader language={language} sidebarControl={<StoryMobileSidebar language={language} />} />
+      <div className="story-layout">
+        <StorySidebar language={language} />
+        <div className="page">{children}</div>
+      </div>
       <footer className="site-footer"><div>© KoofyLab</div></footer>
     </div>
   );
