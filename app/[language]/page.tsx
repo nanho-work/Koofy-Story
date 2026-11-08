@@ -1,36 +1,53 @@
 import Link from "next/link";
+import { FeaturedCarousel } from "../../components/FeaturedCarousel";
 import { StoryCover } from "../../components/StoryCover";
-import { WorkLabel } from "../../components/WorkLabel";
+import { DiscoveryEmpty } from "../../components/WorkGrid";
+import { discover, genreOf } from "../../lib/discovery";
 import { copy } from "../../lib/languages";
-import { coverUrl, listWorks, requireLanguage, workHref } from "../../lib/story";
+import { siteCopy } from "../../lib/navigation";
+import { coverUrl, episodeHref, requireLanguage, workHref } from "../../lib/story";
 
-export default async function CatalogPage({ params }: { params: Promise<{ language: string }> }) {
+export default async function HomePage({ params }: { params: Promise<{ language: string }> }) {
   const language = requireLanguage((await params).language);
-  const t = copy[language];
-  const works = await listWorks(language);
-
+  const t = siteCopy[language];
+  const reading = copy[language];
+  const { featured, latest } = await discover(language);
+  const dates = new Intl.DateTimeFormat(language, { month: "short", day: "numeric", timeZone: "Asia/Seoul" });
   return (
-    <main>
-      <div className="intro">
-        <h1>{t.brand}</h1>
-        <p className="description">{t.intro}</p>
-      </div>
-      <section aria-labelledby="works-heading">
-        <h2 id="works-heading" className="section-heading">{t.works}</h2>
-        {works.length ? (
-          <ul className="work-grid">
-            {works.map((work) => (
-              <li key={work.id}>
-                <Link className="work-card" href={workHref(language, work.id)}>
-                  <StoryCover url={work.cover ? coverUrl(language, work.id) : undefined} />
-                  <WorkLabel work={work} language={language} />
-                  <h3>{work.title}</h3>
-                  {work.author && <p className="muted">{work.author}</p>}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        ) : <p className="empty">{t.empty}</p>}
+    <main className="home">
+      <h1 className="visually-hidden">{reading.brand}</h1>
+      <FeaturedCarousel language={language} slides={featured.map(({ work, first }) => {
+        const genre = genreOf(work);
+        return {
+          id: work.id, title: work.title, label: genre ? t[genre] : reading[work.kind],
+          summary: work.description.replace(/\s+/g, " ").trim() || work.author,
+          image: work.cover ? coverUrl(language, work.id) : undefined,
+          href: workHref(language, work.id),
+          readHref: first ? episodeHref(language, work.id, first.id) : undefined,
+          readLabel: work.kind === "series" ? t.start : reading.read,
+        };
+      })} />
+      <section className="new-releases" aria-labelledby="new-releases-heading">
+        <h2 id="new-releases-heading">{t.latest}</h2>
+        {latest.length ? <ul className="release-grid">
+          {latest.map(({ work, episode }) => {
+            const genre = genreOf(work);
+            return <li key={episode.id}>
+              <Link className="release-item" href={episodeHref(language, work.id, episode.id)}>
+                <StoryCover url={episode.cover ? coverUrl(language, work.id, episode.id) : work.cover ? coverUrl(language, work.id) : undefined} />
+                <div className="release-copy">
+                  <p className="release-meta">
+                    <span>{genre ? t[genre] : reading[work.kind]}</span>
+                    {Number.isFinite(Date.parse(episode.releasedAt)) && <time dateTime={episode.releasedAt}>{dates.format(new Date(episode.releasedAt))}</time>}
+                  </p>
+                  <h3>{episode.title}</h3>
+                  {work.kind === "series" && <p className="release-work">{work.title}{episode.number !== null ? ` · ${reading.number(episode.number)}` : ""}</p>}
+                </div>
+                <span className="release-arrow" aria-hidden="true">→</span>
+              </Link>
+            </li>;
+          })}
+        </ul> : <DiscoveryEmpty language={language} />}
       </section>
     </main>
   );

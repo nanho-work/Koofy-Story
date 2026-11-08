@@ -1,10 +1,11 @@
-import { headers } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { isLanguage } from "../lib/languages";
+import { browserLanguage, languageCookie, sectionHref } from "../lib/navigation";
 
 export default async function Home() {
-  const preferred = (await headers()).get("accept-language")?.split(",")
-    .map((value) => value.trim().toLowerCase().split(/[-;]/, 1)[0])
-    .find(isLanguage);
-  redirect(`/${preferred ?? "ko"}`);
+  const [jar, requestHeaders] = await Promise.all([cookies(), headers()]);
+  const saved = jar.get(languageCookie)?.value;
+  const language = saved && isLanguage(saved) ? saved : browserLanguage(requestHeaders.get("accept-language"));
+  redirect(sectionHref(language));
 }

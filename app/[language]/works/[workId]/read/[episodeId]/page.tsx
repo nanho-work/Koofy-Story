@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { siteCopy } from "../../../../../../lib/navigation";
 import { copy } from "../../../../../../lib/languages";
 import { coverUrl, episodeHref, getEpisode, requireLanguage, workHref } from "../../../../../../lib/story";
 
@@ -35,8 +36,9 @@ export default async function EpisodePage({ params }: Props) {
             : <p key={index}>{block.text}</p>)}
         </div>
       </article>
-      {(previous || next) && <nav className="reader-nav" aria-label={t.episodes}>
+      {work.kind === "series" && <nav className="reader-nav" aria-label={t.episodes}>
         {previous && <Link rel="prev" href={episodeHref(language, work.id, previous.id)}>← {t.previous}</Link>}
+        <Link href={workHref(language, work.id)}>{siteCopy[language].episodeList}</Link>
         {next && <Link rel="next" href={episodeHref(language, work.id, next.id)}>{t.next} →</Link>}
       </nav>}
     </main>
