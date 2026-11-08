@@ -24,6 +24,7 @@ export default async function HomePage({ params }: { params: Promise<{ language:
           title: monthlyEpisode?.title ?? work.title,
           label: monthlyEpisode ? work.title : genre ? t[genre] : reading[work.kind],
           image: monthlyEpisode?.cover ? coverUrl(language, work.id, monthlyEpisode.id) : work.cover ? coverUrl(language, work.id) : undefined,
+          fillArtwork: Boolean(monthlyEpisode?.cover),
           href: workHref(language, work.id),
           readHref: episode ? episodeHref(language, work.id, episode.id) : undefined,
           readLabel: monthlyEpisode ? t.readStory : work.kind === "series" ? t.start : reading.read,
