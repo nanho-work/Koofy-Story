@@ -1,0 +1,62 @@
+:root {
+  color-scheme: light;
+  background: #f8f6ef;
+  color: #28382d;
+  font-family: system-ui, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+}
+
+body {
+  margin: 0;
+}
+
+.page {
+  max-width: 64rem;
+  margin-inline: auto;
+  padding-inline: clamp(1.25rem, 6vw, 4rem);
+}
+
+.masthead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-block: 1.5rem;
+  border-bottom: 1px solid #d9ded0;
+}
+
+.wordmark {
+  font-family: Georgia, serif;
+  font-size: 1.375rem;
+  font-weight: 700;
+}
+
+.publisher,
+.eyebrow {
+  color: #4e6856;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.intro {
+  max-width: 34rem;
+  padding-block: clamp(4rem, 14vw, 9rem);
+}
+
+.eyebrow {
+  margin: 0;
+}
+
+h1 {
+  margin: 0.75rem 0 1rem;
+  font-size: clamp(2.75rem, 9vw, 5rem);
+  line-height: 1.1;
+  letter-spacing: -0.06em;
+}
+
+.description {
+  margin: 0;
+  color: #4b594e;
+  font-size: 1.0625rem;
+  line-height: 1.8;
+  word-break: keep-all;
+}
