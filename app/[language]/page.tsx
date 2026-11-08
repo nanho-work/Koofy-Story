@@ -20,7 +20,6 @@ export default async function HomePage({ params }: { params: Promise<{ language:
         const genre = genreOf(work);
         return {
           id: work.id, title: work.title, label: genre ? t[genre] : reading[work.kind],
-          summary: work.description.replace(/\s+/g, " ").trim() || work.author,
           image: work.cover ? coverUrl(language, work.id) : undefined,
           href: workHref(language, work.id),
           readHref: first ? episodeHref(language, work.id, first.id) : undefined,
