@@ -129,18 +129,19 @@ a:focus-visible, button:focus-visible, select:focus-visible { outline: 2px solid
   position: absolute;
   inset: 0;
   z-index: -1;
-  background: linear-gradient(180deg, #10211716 30%, #101d16d9 78%, #101d16 100%);
-}
-.featured-slide[data-fill-artwork]::after {
-  background: linear-gradient(180deg, transparent 42%, #111d1880 72%, #111d18f0 100%);
+  background: linear-gradient(180deg, transparent 36%, #111d18a3 68%, #111d18f0 100%);
 }
 .featured-slide[data-active="false"] { filter: brightness(.72); cursor: pointer; }
 .featured-slide[data-active="false"] a { pointer-events: none; }
-.featured-backdrop { position: absolute; z-index: -2; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: .61; filter: blur(8px); transform: scale(1.06); }
-.featured-backdrop[data-landscape="true"] { opacity: .94; filter: none; transform: none; }
-.featured-backdrop.featured-illustration { opacity: 1; filter: none; transform: none; object-position: center 40%; }
-.featured-cover { grid-row: 1; align-self: center; justify-self: center; width: 100%; height: 100%; min-height: 0; padding: 1rem 1rem .35rem; object-fit: contain; }
-.featured-cover[data-landscape="true"] { visibility: hidden; }
+.featured-artwork {
+  position: absolute;
+  z-index: -2;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 40%;
+}
 .featured-caption { grid-row: 2; min-width: 0; padding: .75rem clamp(1rem, 3vw, 2rem) clamp(.85rem, 2.5vw, 1.35rem); }
 .featured-label { margin: 0 0 .35rem; color: #e0e8d7; font-size: .81rem; font-weight: 650; }
 .featured-caption h2 {
@@ -249,8 +250,7 @@ a:focus-visible, button:focus-visible, select:focus-visible { outline: 2px solid
   .featured { --slide-width: 89%; }
   .featured-slide { height: clamp(18rem, 83vw, 22rem); }
   .featured-caption { padding: .65rem .85rem .8rem; }
-  .featured-cover { padding-top: .75rem; }
-  .featured-backdrop.featured-illustration { object-position: center 45%; }
+  .featured-artwork { object-position: center 45%; }
   .work-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .work-intro { grid-template-columns: minmax(0, 1fr); }
   .work-intro .cover { width: min(55%, 11rem); }

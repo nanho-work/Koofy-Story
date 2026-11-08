@@ -10,7 +10,6 @@ export type FeaturedSlide = {
   title: string;
   label: string;
   image?: string;
-  fillArtwork?: boolean;
   href: string;
   readHref?: string;
   readLabel: string;
@@ -20,20 +19,6 @@ const AUTO_ADVANCE_MS = 3_000;
 
 function centerOffset(viewport: HTMLElement, card: HTMLElement) {
   return card.offsetLeft + (card.offsetWidth - viewport.clientWidth) / 2;
-}
-
-function FeaturedArtwork({ src, priority, fill }: { src: string; priority: boolean; fill?: boolean }) {
-  const [landscape, setLandscape] = useState(false);
-  if (fill) {
-    return <img className="featured-backdrop featured-illustration" src={src} alt="" draggable={false}
-      fetchPriority={priority ? "high" : "auto"} />;
-  }
-  return <>
-    <img className="featured-backdrop" data-landscape={landscape} src={src} alt="" draggable={false} />
-    <img className="featured-cover" data-landscape={landscape} src={src} alt="" draggable={false}
-      fetchPriority={priority ? "high" : "auto"}
-      onLoad={({ currentTarget: image }) => setLandscape(image.naturalWidth / image.naturalHeight >= 1.45)} />
-  </>;
 }
 
 export function FeaturedCarousel({ slides, language }: { slides: FeaturedSlide[]; language: Language }) {
@@ -162,9 +147,10 @@ export function FeaturedCarousel({ slides, language }: { slides: FeaturedSlide[]
         {track.map(({ slide, index, duplicate }, slot) => {
           const selected = !duplicate && active === index;
           return <article key={duplicate ? `edge-${slide.id}` : slide.id} className="featured-slide"
-            data-active={selected} data-fill-artwork={slide.fillArtwork || undefined} aria-hidden={!selected}
+            data-active={selected} aria-hidden={!selected}
             onClick={selected ? undefined : () => snapTo(slot, true)}>
-            {slide.image && <FeaturedArtwork key={slide.image} src={slide.image} priority={index === 0 && !duplicate} fill={slide.fillArtwork} />}
+            {slide.image && <img className="featured-artwork" src={slide.image} alt="" draggable={false}
+              fetchPriority={index === 0 && !duplicate ? "high" : "auto"} />}
             <div className="featured-caption">
               <p className="featured-label">{slide.label}</p>
               <h2><Link className="featured-title" href={slide.href} tabIndex={selected ? undefined : -1}>
