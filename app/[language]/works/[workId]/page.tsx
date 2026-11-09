@@ -5,7 +5,7 @@ import { WorkLabel } from "../../../../components/WorkLabel";
 import { genreOf } from "../../../../lib/discovery";
 import { sectionHref, siteCopy } from "../../../../lib/navigation";
 import { copy, type Language } from "../../../../lib/languages";
-import { coverUrl, episodeHref, getWork, requireLanguage } from "../../../../lib/story";
+import { coverUrl, episodeHref, episodeListAnchor, getWork, requireLanguage } from "../../../../lib/story";
 
 type Props = {
   params: Promise<{ language: string; workId: string }>;
@@ -58,12 +58,12 @@ export default async function WorkPage({ params, searchParams }: Props) {
         </div>
       </div>
       {work.kind === "series" && <>
-        <section aria-labelledby="episode-heading">
+        <section aria-labelledby={episodeListAnchor}>
           <div className="episode-toolbar">
-            <h2 id="episode-heading" className="section-heading">{t.episodes} <small>{t.count(work.episodeCount)}</small></h2>
+            <h2 id={episodeListAnchor} className="section-heading">{t.episodes} <small>{t.count(work.episodeCount)}</small></h2>
             {episodes.length > 1 && <nav className="episode-order" aria-label={site.episodeOrder}>
-              <Link href="?order=latest#episode-heading" aria-current={order === "latest" ? "true" : undefined}>{site.newestFirst}</Link>
-              <Link href="?order=first#episode-heading" aria-current={order === "first" ? "true" : undefined}>{site.firstEpisodeFirst}</Link>
+              <Link href={`?order=latest#${episodeListAnchor}`} aria-current={order === "latest" ? "true" : undefined}>{site.newestFirst}</Link>
+              <Link href={`?order=first#${episodeListAnchor}`} aria-current={order === "first" ? "true" : undefined}>{site.firstEpisodeFirst}</Link>
             </nav>}
           </div>
           <ol className="episode-list">

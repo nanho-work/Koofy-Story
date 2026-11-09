@@ -42,6 +42,8 @@ export function workHref(language: Language, id: string) {
   return `/${language}/works/${id}`;
 }
 
+export const episodeListAnchor = "episode-heading";
+
 export function episodeHref(language: Language, workId: string, episodeId: string) {
   return `${workHref(language, workId)}/read/${episodeId}`;
 }

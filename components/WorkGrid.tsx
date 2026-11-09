@@ -17,8 +17,13 @@ export function WorkGrid({ works, language, variant }: { works: Work[]; language
       {works.map((work) => <li key={work.id}>
         <Link className="work-card" href={workHref(language, work.id)}>
           <StoryCover url={work.cover ? coverUrl(language, work.id) : undefined} />
-          <h3>{work.title}</h3>
-          {variant !== "shelf" && <WorkLabel work={work} language={language} />}
+          <div className="work-card-copy">
+            <h3>{work.title}</h3>
+            {variant !== "shelf" && <>
+              <WorkLabel work={work} language={language} />
+              {work.description.trim() && <p className="work-card-description">{work.description}</p>}
+            </>}
+          </div>
         </Link>
       </li>)}
     </ul>

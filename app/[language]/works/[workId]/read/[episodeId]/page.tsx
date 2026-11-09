@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ProtectedProse } from "../../../../../../components/ProtectedProse";
-import { siteCopy } from "../../../../../../lib/navigation";
+import { readingBlocks } from "../../../../../../lib/reader-prose";
 import { copy } from "../../../../../../lib/languages";
-import { coverUrl, episodeHref, getEpisode, requireLanguage, workHref } from "../../../../../../lib/story";
+import { coverUrl, episodeHref, episodeListAnchor, getEpisode, requireLanguage, workHref } from "../../../../../../lib/story";
 
 type Props = { params: Promise<{ language: string; workId: string; episodeId: string }> };
 
@@ -20,10 +20,18 @@ export default async function EpisodePage({ params }: Props) {
   const result = await getEpisode(language, workId, episodeId);
   if (!result) notFound();
   const { work, episode, blocks, previous, next } = result;
+  const detailHref = workHref(language, work.id);
+  const listHref = `${detailHref}#${episodeListAnchor}`;
+  const isSeries = work.kind === "series";
 
   return (
     <main className="reader">
-      <Link className="back-link" href={workHref(language, work.id)}>← {work.title}</Link>
+      <div className={isSeries ? "reader-toolbar reader-toolbar--sticky" : "reader-toolbar"}>
+        <Link className="reader-work-link" href={detailHref}>
+          <span aria-hidden="true">←</span><span>{work.title}</span>
+        </Link>
+        {isSeries && <Link className="reader-list-link" href={listHref}>{t.episodes}</Link>}
+      </div>
       <article>
         <header className="reader-heading">
           {episode.number !== null && <p className="eyebrow">{t.number(episode.number)}</p>}
@@ -32,14 +40,14 @@ export default async function EpisodePage({ params }: Props) {
         </header>
         {episode.cover && <img className="reader-cover" alt="" src={coverUrl(language, work.id, episode.id)} decoding="async" />}
         <ProtectedProse>
-          {blocks.map((block, index) => block.type === "heading"
+          {readingBlocks(blocks, episode, language).map((block, index) => block.type === "heading"
             ? <h2 key={index}>{block.text}</h2>
             : <p key={index}>{block.text}</p>)}
         </ProtectedProse>
       </article>
-      {work.kind === "series" && <nav className="reader-nav" aria-label={t.episodes}>
+      {isSeries && <nav className="reader-nav" aria-label={t.episodes}>
         {previous && <Link rel="prev" href={episodeHref(language, work.id, previous.id)}>← {t.previous}</Link>}
-        <Link href={workHref(language, work.id)}>{siteCopy[language].episodeList}</Link>
+        <Link href={listHref}>{t.episodes}</Link>
         {next && <Link rel="next" href={episodeHref(language, work.id, next.id)}>{t.next} →</Link>}
       </nav>}
     </main>
