@@ -1,15 +1,24 @@
 import { isLanguage, type Language } from "./languages";
 
-export const genres = ["novels", "fairy-tales", "monthly"] as const;
-export type Genre = (typeof genres)[number];
+export const genres = ["novels", "fairy-tales", "poetry", "essays", "interviews", "other", "monthly"] as const;
+export type Genre = (typeof genres)[number] | `category-${string}`;
 export const languageCookie = "koofy_story_language";
 
 export function isGenre(value: string): value is Genre {
-  return genres.some((genre) => genre === value);
+  return genres.some((genre) => genre === value) || /^category-.+$/u.test(value);
 }
 
 export function sectionHref(language: Language, genre?: Genre) {
-  return genre ? `/${language}/browse/${genre}` : `/${language}`;
+  return genre ? `/${language}/browse/${encodeURIComponent(genre)}` : `/${language}`;
+}
+
+export function homeHref(language: Language, genre?: Genre) {
+  return genre ? `/${language}?genre=${encodeURIComponent(genre)}` : sectionHref(language);
+}
+
+export function genreLabel(language: Language, genre: Genre) {
+  const known = genres.find((entry) => entry === genre);
+  return known ? siteCopy[language][known] : genre.slice("category-".length);
 }
 
 export function browserLanguage(header: string | null): Language {
@@ -25,7 +34,9 @@ export function browserLanguage(header: string | null): Language {
 
 export const siteCopy = {
   ko: {
-    home: "홈", novels: "웹소설", "fairy-tales": "동화", monthly: "월간 쿠피",
+    home: "홈", novels: "소설", "fairy-tales": "동화", poetry: "시", essays: "에세이",
+    interviews: "사람을 만나다", other: "기타", monthly: "월간 쿠피",
+    recommended: "추천", genreNav: "장르", seeAll: "전체 보기",
     nav: "주 메뉴", language: "언어", featured: "추천 작품", latest: "새로 올라온 글",
     older: "이전 작품", newer: "다음 작품", slide: (i: number) => `${i}번째 작품`,
     pauseSlides: "자동 넘김 일시정지", playSlides: "자동 넘김 재생",
@@ -36,7 +47,9 @@ export const siteCopy = {
     numberOfWorks: (n: number) => `${n}개 작품`,
   },
   en: {
-    home: "Home", novels: "Web Fiction", "fairy-tales": "Fairy Tales", monthly: "Koofy Monthly",
+    home: "Home", novels: "Fiction", "fairy-tales": "Fairy Tales", poetry: "Poetry", essays: "Essays",
+    interviews: "Interviews", other: "Other", monthly: "Koofy Monthly",
+    recommended: "Featured", genreNav: "Genres", seeAll: "View all",
     nav: "Main navigation", language: "Language", featured: "Featured stories", latest: "New on Koofy",
     older: "Previous story", newer: "Next story", slide: (i: number) => `Story ${i}`,
     pauseSlides: "Pause automatic slides", playSlides: "Play automatic slides",
@@ -47,7 +60,9 @@ export const siteCopy = {
     numberOfWorks: (n: number) => `${n} ${n === 1 ? "story" : "stories"}`,
   },
   ja: {
-    home: "ホーム", novels: "ウェブ小説", "fairy-tales": "童話", monthly: "月刊クーフィー",
+    home: "ホーム", novels: "小説", "fairy-tales": "童話", poetry: "詩", essays: "エッセイ",
+    interviews: "インタビュー", other: "その他", monthly: "月刊クーフィー",
+    recommended: "おすすめ", genreNav: "ジャンル", seeAll: "すべて見る",
     nav: "メインメニュー", language: "言語", featured: "おすすめの作品", latest: "新着の読みもの",
     older: "前の作品", newer: "次の作品", slide: (i: number) => `${i}番目の作品`,
     pauseSlides: "自動切り替えを一時停止", playSlides: "自動切り替えを再生",

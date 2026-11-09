@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { StoryCover } from "../../../../components/StoryCover";
 import { WorkLabel } from "../../../../components/WorkLabel";
 import { genreOf } from "../../../../lib/discovery";
-import { sectionHref, siteCopy } from "../../../../lib/navigation";
+import { genreLabel, sectionHref, siteCopy } from "../../../../lib/navigation";
 import { copy, type Language } from "../../../../lib/languages";
 import { coverUrl, episodeHref, episodeListAnchor, getWork, requireLanguage } from "../../../../lib/story";
 
@@ -46,7 +46,7 @@ export default async function WorkPage({ params, searchParams }: Props) {
 
   return (
     <main className="detail">
-      <Link className="back-link" href={sectionHref(language, genre)}>← {genre ? site[genre] : site.home}</Link>
+      <Link className="back-link" href={sectionHref(language, genre)}>← {genreLabel(language, genre)}</Link>
       <div className="work-intro">
         <StoryCover url={work.cover ? coverUrl(language, work.id) : undefined} />
         <div>

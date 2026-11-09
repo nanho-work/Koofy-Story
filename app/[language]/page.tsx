@@ -4,25 +4,38 @@ import { StoryCover } from "../../components/StoryCover";
 import { DiscoveryEmpty, WorkGrid } from "../../components/WorkGrid";
 import { discover, genreOf } from "../../lib/discovery";
 import { copy } from "../../lib/languages";
-import { siteCopy } from "../../lib/navigation";
+import { genreLabel, homeHref, isGenre, sectionHref, siteCopy } from "../../lib/navigation";
 import { coverUrl, episodeHref, requireLanguage, workHref } from "../../lib/story";
 
-export default async function HomePage({ params }: { params: Promise<{ language: string }> }) {
+export default async function HomePage({ params, searchParams }: {
+  params: Promise<{ language: string }>;
+  searchParams: Promise<{ genre?: string | string[] }>;
+}) {
   const language = requireLanguage((await params).language);
   const t = siteCopy[language];
   const reading = copy[language];
-  const { featured, latest, shelf } = await discover(language);
+  const { genre } = await searchParams;
+  const { availableGenres, selectedGenre, featured, latest, shelf } =
+    await discover(language, typeof genre === "string" && isGenre(genre) ? genre : undefined);
   const dates = new Intl.DateTimeFormat(language, { month: "short", day: "numeric", timeZone: "Asia/Seoul" });
   return (
     <main className="home">
       <h1 className="visually-hidden">{reading.brand}</h1>
-      <FeaturedCarousel language={language} slides={featured.map(({ work, first, monthlyEpisode }) => {
+      <nav className="home-genres" aria-label={t.genreNav}>
+        {[undefined, ...availableGenres].map((entry) => (
+          <Link key={entry ?? "featured"} href={homeHref(language, entry)} prefetch={false}
+            aria-current={entry === selectedGenre ? "page" : undefined} scroll={false}>
+            {entry ? genreLabel(language, entry) : t.recommended}
+          </Link>
+        ))}
+      </nav>
+      <FeaturedCarousel key={selectedGenre ?? "featured"} language={language} slides={featured.map(({ work, first, monthlyEpisode }) => {
         const genre = genreOf(work);
         const episode = monthlyEpisode ?? first;
         return {
           id: work.id,
           title: monthlyEpisode?.title ?? work.title,
-          label: monthlyEpisode ? work.title : genre ? t[genre] : reading[work.kind],
+          label: monthlyEpisode ? work.title : genreLabel(language, genre),
           image: monthlyEpisode?.cover ? coverUrl(language, work.id, monthlyEpisode.id) : work.cover ? coverUrl(language, work.id) : undefined,
           href: workHref(language, work.id),
           readHref: episode ? episodeHref(language, work.id, episode.id) : undefined,
@@ -30,7 +43,10 @@ export default async function HomePage({ params }: { params: Promise<{ language:
         };
       })} />
       <section className="new-releases" aria-labelledby="new-releases-heading">
-        <h2 id="new-releases-heading">{t.latest}</h2>
+        <div className="home-section-heading">
+          <h2 id="new-releases-heading">{t.latest}</h2>
+          {selectedGenre && <Link href={sectionHref(language, selectedGenre)}>{t.seeAll}</Link>}
+        </div>
         {latest.length ? <ul className="release-grid">
           {latest.map(({ work, episode }) => {
             const genre = genreOf(work);
@@ -39,7 +55,7 @@ export default async function HomePage({ params }: { params: Promise<{ language:
                 <StoryCover url={episode.cover ? coverUrl(language, work.id, episode.id) : work.cover ? coverUrl(language, work.id) : undefined} />
                 <div className="release-copy">
                   <p className="release-meta">
-                    <span>{genre ? t[genre] : reading[work.kind]}</span>
+                    <span>{genreLabel(language, genre)}</span>
                     {Number.isFinite(Date.parse(episode.releasedAt)) && <time dateTime={episode.releasedAt}>{dates.format(new Date(episode.releasedAt))}</time>}
                   </p>
                   <h3>{episode.title}</h3>

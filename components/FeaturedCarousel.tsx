@@ -38,7 +38,7 @@ export function FeaturedCarousel({ slides, language }: { slides: FeaturedSlide[]
   const [scrolling, setScrolling] = useState(false);
   const [pageVisible, setPageVisible] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
-  const autoPlaying = count > 1 && playing && !reducedMotion && pageVisible && !hovered && !focused && !touching;
+  const autoPlaying = loop && playing && !reducedMotion && pageVisible && !hovered && !focused && !touching;
   const cards = slides.map((slide, index) => ({ slide, index, duplicate: false }));
   // One copy at each edge keeps the neighboring artwork visible through a wrap.
   const track = loop ? [
@@ -57,7 +57,7 @@ export function FeaturedCarousel({ slides, language }: { slides: FeaturedSlide[]
 
   useLayoutEffect(() => {
     const area = viewport.current;
-    if (!area) return;
+    if (!area || !loop) return;
     let width = area.clientWidth;
     position.current = first;
     snapTo(first, false);
@@ -71,10 +71,10 @@ export function FeaturedCarousel({ slides, language }: { slides: FeaturedSlide[]
       observer.disconnect();
       window.clearTimeout(timer.current);
     };
-  }, [first, count, snapTo]);
+  }, [first, count, loop, snapTo]);
 
   useEffect(() => {
-    if (count < 2) return;
+    if (!loop) return;
     const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
     const sync = () => {
       setPageVisible(!document.hidden);
@@ -87,16 +87,15 @@ export function FeaturedCarousel({ slides, language }: { slides: FeaturedSlide[]
       document.removeEventListener("visibilitychange", sync);
       motion.removeEventListener("change", sync);
     };
-  }, [count]);
+  }, [loop]);
 
   useEffect(() => {
     if (!autoPlaying || scrolling) return;
     const advance = window.setTimeout(() => {
-      const next = !loop && position.current === count - 1 ? 0 : position.current + 1;
-      snapTo(next, true);
+      snapTo(position.current + 1, true);
     }, AUTO_ADVANCE_MS);
     return () => window.clearTimeout(advance);
-  }, [active, autoPlaying, count, loop, scrolling, snapTo]);
+  }, [active, autoPlaying, scrolling, snapTo]);
 
   function settle() {
     const area = viewport.current;
@@ -125,7 +124,7 @@ export function FeaturedCarousel({ slides, language }: { slides: FeaturedSlide[]
   if (!count) return null;
 
   return (
-    <section className="featured" aria-label={t.featured} data-single={count === 1}
+    <section className="featured" aria-label={t.featured} data-static={!loop} data-single={count === 1}
       onFocus={(event) => setFocused(event.target !== rotationControl.current)}
       onBlur={(event) => { if (!event.currentTarget.contains(event.relatedTarget)) setFocused(false); }}>
       <div className="featured-track" ref={viewport}
@@ -135,17 +134,18 @@ export function FeaturedCarousel({ slides, language }: { slides: FeaturedSlide[]
         onPointerUp={() => setTouching(false)}
         onPointerCancel={() => setTouching(false)}
         onScroll={() => {
+          if (!loop) return;
           setScrolling(true);
           window.clearTimeout(timer.current);
           timer.current = window.setTimeout(settle, 150);
         }}
         onKeyDown={(event) => {
-          if (count < 2 || (event.key !== "ArrowLeft" && event.key !== "ArrowRight")) return;
+          if (!loop || (event.key !== "ArrowLeft" && event.key !== "ArrowRight")) return;
           event.preventDefault();
           move(event.key === "ArrowLeft" ? -1 : 1);
         }}>
         {track.map(({ slide, index, duplicate }, slot) => {
-          const selected = !duplicate && active === index;
+          const selected = !loop || (!duplicate && active === index);
           return <article key={duplicate ? `edge-${slide.id}` : slide.id} className="featured-slide"
             data-active={selected} aria-hidden={!selected}
             onClick={selected ? undefined : () => snapTo(slot, true)}>
@@ -160,13 +160,13 @@ export function FeaturedCarousel({ slides, language }: { slides: FeaturedSlide[]
                 <Link className="featured-button" href={slide.readHref ?? slide.href} tabIndex={selected ? undefined : -1}>
                   {slide.readHref ? slide.readLabel : t.details}<span aria-hidden="true">→</span>
                 </Link>
-                {count > 1 && <span className="featured-count" aria-hidden="true">{index + 1} / {count}</span>}
+                {loop && <span className="featured-count" aria-hidden="true">{index + 1} / {count}</span>}
               </div>
             </div>
           </article>;
         })}
       </div>
-      {count > 1 && (
+      {loop && (
         <div className="featured-controls">
           <span className="visually-hidden" role="status" aria-live={autoPlaying ? "off" : "polite"}>
             {t.slide(active + 1)} · {slides[active]?.title}
@@ -177,8 +177,8 @@ export function FeaturedCarousel({ slides, language }: { slides: FeaturedSlide[]
               {playing ? <path d="M4 3h2v10H4zm6 0h2v10h-2z" /> : <path d="M5 2.5 13 8l-8 5.5z" />}
             </svg>
           </button>}
-          <button type="button" onClick={() => move(-1)} aria-label={t.older} disabled={!loop && active === 0}>←</button>
-          <button type="button" onClick={() => move(1)} aria-label={t.newer} disabled={!loop && active === count - 1}>→</button>
+          <button type="button" onClick={() => move(-1)} aria-label={t.older}>←</button>
+          <button type="button" onClick={() => move(1)} aria-label={t.newer}>→</button>
         </div>
       )}
     </section>
