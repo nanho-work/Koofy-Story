@@ -1,4 +1,4 @@
-import { genres, type Genre } from "./navigation";
+import type { Genre } from "./navigation";
 import type { Language } from "./languages";
 import { getWork, listWorks, type Episode, type Work } from "./story";
 
@@ -30,16 +30,10 @@ function newestEpisode(episodes: Episode[]) {
       ? item : newest, undefined);
 }
 
-export async function discover(language: Language, requestedGenre?: Genre) {
-  const all = await listWorks(language);
-  const available = new Set(all.map(genreOf));
-  const availableGenres = [...new Set<Genre>([...genres, ...available])]
-    .filter((genre) => genre !== "monthly" && available.has(genre));
-  const selectedGenre = requestedGenre && availableGenres.includes(requestedGenre) ? requestedGenre : undefined;
-  const works = all.filter((work) => !selectedGenre || genreOf(work) === selectedGenre)
-    .sort((a, b) => time(b) - time(a));
+export async function discover(language: Language) {
+  const works = (await listWorks(language)).slice().sort((a, b) => time(b) - time(a));
   const illustrated = works.filter((work) => work.cover);
-  const monthly = selectedGenre ? undefined : works.find((work) => genreOf(work) === "monthly");
+  const monthly = works.find((work) => genreOf(work) === "monthly");
   const featured = [...new Set([...(monthly ? [monthly] : []), ...illustrated, ...works])].slice(0, 3);
   const recent = works.slice(0, 4);
   const candidates = [...new Set([...featured, ...recent])];
@@ -57,8 +51,6 @@ export async function discover(language: Language, requestedGenre?: Genre) {
     throw new Error("Could not load recent episodes");
   }
   return {
-    availableGenres,
-    selectedGenre,
     featured: featured.map((work) => ({
       work,
       monthlyEpisode: work === monthly ? newestEpisode(episodesOf(work)) : undefined,

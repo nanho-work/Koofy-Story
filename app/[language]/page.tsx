@@ -1,10 +1,11 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { FeaturedCarousel } from "../../components/FeaturedCarousel";
 import { StoryCover } from "../../components/StoryCover";
 import { DiscoveryEmpty, WorkGrid } from "../../components/WorkGrid";
 import { discover, genreOf } from "../../lib/discovery";
 import { copy } from "../../lib/languages";
-import { genreLabel, homeHref, isGenre, sectionHref, siteCopy } from "../../lib/navigation";
+import { genreLabel, isGenre, sectionHref, siteCopy } from "../../lib/navigation";
 import { coverUrl, episodeHref, requireLanguage, workHref } from "../../lib/story";
 
 export default async function HomePage({ params, searchParams }: {
@@ -15,21 +16,13 @@ export default async function HomePage({ params, searchParams }: {
   const t = siteCopy[language];
   const reading = copy[language];
   const { genre } = await searchParams;
-  const { availableGenres, selectedGenre, featured, latest, shelf } =
-    await discover(language, typeof genre === "string" && isGenre(genre) ? genre : undefined);
+  if (typeof genre === "string" && isGenre(genre)) redirect(sectionHref(language, genre));
+  const { featured, latest, shelf } = await discover(language);
   const dates = new Intl.DateTimeFormat(language, { month: "short", day: "numeric", timeZone: "Asia/Seoul" });
   return (
     <main className="home">
       <h1 className="visually-hidden">{reading.brand}</h1>
-      <nav className="home-genres" aria-label={t.genreNav}>
-        {[undefined, ...availableGenres].map((entry) => (
-          <Link key={entry ?? "featured"} href={homeHref(language, entry)} prefetch={false}
-            aria-current={entry === selectedGenre ? "page" : undefined} scroll={false}>
-            {entry ? genreLabel(language, entry) : t.recommended}
-          </Link>
-        ))}
-      </nav>
-      <FeaturedCarousel key={selectedGenre ?? "featured"} language={language} slides={featured.map(({ work, first, monthlyEpisode }) => {
+      <FeaturedCarousel language={language} slides={featured.map(({ work, first, monthlyEpisode }) => {
         const genre = genreOf(work);
         const episode = monthlyEpisode ?? first;
         return {
@@ -43,10 +36,7 @@ export default async function HomePage({ params, searchParams }: {
         };
       })} />
       <section className="new-releases" aria-labelledby="new-releases-heading">
-        <div className="home-section-heading">
-          <h2 id="new-releases-heading">{t.latest}</h2>
-          {selectedGenre && <Link href={sectionHref(language, selectedGenre)}>{t.seeAll}</Link>}
-        </div>
+        <h2 id="new-releases-heading">{t.latest}</h2>
         {latest.length ? <ul className="release-grid">
           {latest.map(({ work, episode }) => {
             const genre = genreOf(work);
@@ -68,7 +58,10 @@ export default async function HomePage({ params, searchParams }: {
         </ul> : <DiscoveryEmpty language={language} />}
       </section>
       {!!shelf.length && <section className="home-shelf" aria-labelledby="home-shelf-heading">
-        <h2 id="home-shelf-heading">{t.explore}</h2>
+        <div className="home-section-heading">
+          <h2 id="home-shelf-heading">{t.explore}</h2>
+          <Link href={sectionHref(language, "all")}>{t.seeAll}</Link>
+        </div>
         <WorkGrid works={shelf} language={language} variant="shelf" />
       </section>}
     </main>
